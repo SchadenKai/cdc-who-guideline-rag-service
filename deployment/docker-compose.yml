@@ -1,11 +1,14 @@
+include:
+  - path: ./docker-compose.milvus.yml
+
 services:
   api_server:
     container_name: "api_server"
     build:
-      context: backend
+      context: ../backend
       dockerfile: Dockerfile
     restart: always
     env_file:
-      - .env
+      - ../.env
     ports:
       - 8000:8000
