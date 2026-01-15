@@ -7,10 +7,12 @@ from langchain_core.messages import BaseMessage
 from app.agent.react_agent.main import agent
 from app.agent.react_agent.state import AgentState
 from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.runnables import RunnableConfig
 
 # from ag_ui.core import RunAgentInput
 # from ag_ui.encoder import EventEncoder
 from app.agent.react_agent.context import AgentContext
+from app.utils import get_request_id
 
 chat_router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -19,6 +21,7 @@ chat_router = APIRouter(prefix="/chat", tags=["chat"])
 def send_message(
     query: str,
     system_prompt: str | None = "You are a helpful assistant",
+    request_id: str = Depends(get_request_id),
     llm: BaseChatModel = Depends(get_llm_provider),
 ):
     init_state = AgentState(
@@ -28,8 +31,9 @@ def send_message(
         ]
     )
     context = AgentContext(llm=llm)
+    config: RunnableConfig = {"configurable": {"thread_id": request_id}}
     final_response = ""
-    for res in agent.stream(input=init_state, context=context):
+    for res in agent.stream(input=init_state, context=context, config=config):
         for node_name, state_update in res.items():
             if "messages" in state_update:
                 final_message = cast(BaseMessage, state_update["messages"][-1])

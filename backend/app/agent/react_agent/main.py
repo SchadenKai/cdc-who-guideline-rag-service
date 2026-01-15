@@ -3,6 +3,7 @@
 # create nodes
 # routing function if necessary
 from langgraph.graph import StateGraph
+from langgraph.checkpoint.memory import InMemorySaver
 from .state import AgentState
 from .nodes import call_llm_node, validate_input_node
 
@@ -15,4 +16,6 @@ graph.set_entry_point("validate_input_node")
 graph.set_finish_point("call_llm_node")
 graph.add_edge("validate_input_node", "call_llm_node")
 
-agent = graph.compile()
+checkpointer = InMemorySaver()
+
+agent = graph.compile(checkpointer=checkpointer)
