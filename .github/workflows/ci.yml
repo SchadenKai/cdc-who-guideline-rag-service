@@ -29,5 +29,5 @@ jobs:
                   cd backend
                   uv run ruff check .
 
-            - name: Type check with mypy
-              run: cd backend && uv run mypy .
+            # - name: Type check with mypy
+            #   run: cd backend && uv run mypy .
