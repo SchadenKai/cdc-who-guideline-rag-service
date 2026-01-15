@@ -44,3 +44,10 @@ target-version= "py311"
 # E: pycodestyle, F: pyflakes, I: isort (imports), B: bugbear (common bugs)
 select = ["E", "F", "I", "B"]
 ignore = []
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
