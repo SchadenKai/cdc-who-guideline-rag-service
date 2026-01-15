@@ -1,4 +1,3 @@
-from typing import Optional
 from pydantic import BaseModel, Field
 from langchain_core.language_models.chat_models import BaseChatModel
 

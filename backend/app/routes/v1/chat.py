@@ -1,4 +1,4 @@
-from typing import Optional, cast
+from typing import cast
 from fastapi import APIRouter, Depends
 
 from app.services.llm.factory import get_llm_provider
