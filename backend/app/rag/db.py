@@ -1,7 +1,5 @@
 from functools import lru_cache
-from typing import Annotated
 
-from fastapi import Depends
 from langchain.embeddings import Embeddings
 from pymilvus import DataType, IndexType, MilvusClient
 
@@ -304,7 +302,6 @@ class VectorClient:
 
 
 @lru_cache()
-def get_vector_client(
-    encoder: Annotated[Embeddings, Depends(get_bi_encoder)],
-) -> VectorClient:
+def get_vector_client() -> VectorClient:
+    encoder = get_bi_encoder()
     return VectorClient(encoder)

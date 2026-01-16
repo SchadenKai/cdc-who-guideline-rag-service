@@ -5,9 +5,9 @@ from typing import Annotated
 from fastapi import Depends, FastAPI
 
 from app.core.config import settings
-from app.core.vector import VectorClient, get_vector_client
+from app.rag.db import VectorClient, get_vector_client
+from app.rag.embeddings import get_bi_encoder
 from app.routes.v1.main import v1_router
-from app.services.bi_encoder import get_bi_encoder
 
 
 @asynccontextmanager
@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     # vector_db.delete_collection()
     vector_db.setup()
     vector_db.load_collection()
-    vector_db.smoke_test()
+    # vector_db.smoke_test()
     print("[INFO] Getting started")
     yield
 

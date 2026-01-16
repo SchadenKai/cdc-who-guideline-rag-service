@@ -28,7 +28,4 @@ def get_final_document(
 # storage
 def store_documents(documents: list[dict], vector_db: VectorClient) -> None:
     db = vector_db.get_client()
-    try:
-        db.insert(collection_name=settings, data=documents)
-    except Exception as e:
-        raise e from e
+    db.insert(collection_name=settings, data=documents)
