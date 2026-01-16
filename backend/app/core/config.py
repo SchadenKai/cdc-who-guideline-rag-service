@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     # vector config
     vector_dim: int = 512
     text_field_max_length: int = 2048
+    chunk_size: int = 1000
+    chunk_overlap: int = 200
 
     # model config
     bi_encoder_model: str = "text-embedding-3-small"
