@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     # vector config
     vector_dim: int = 512
     text_field_max_length: int = 2048
+    
+    # model config
+    bi_encoder_model: str = "text-embedding-3-small"
 
 
 settings = Settings()
