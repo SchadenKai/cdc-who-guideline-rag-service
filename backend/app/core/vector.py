@@ -1,10 +1,9 @@
 from functools import lru_cache
 
+from langchain.embeddings import Embeddings
 from pymilvus import DataType, IndexType, MilvusClient
 
-from langchain.embeddings import Embeddings
 from app.core.config import settings
-from app.services.bi_encoder import get_bi_encoder
 
 
 class VectorClient:
