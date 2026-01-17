@@ -13,6 +13,9 @@ class Settings(BaseSettings):
     app_version: str = "v0.1.0"
 
     openai_api_key: str = os.environ.get("OPENAI_API_KEY")
+    llm_api_key: str = os.environ.get("LLM_API_KEY", openai_api_key)
+    llm_provider: str = os.environ.get("LLM_PROVIDER", "openai")
+    llm_model_name: str = os.environ.get("LLM_MODEL_NAME", "chatgpt-4o-latest")
 
     milvus_url: str = os.environ.get("MILVUS_URL", "http://localhost:19530")
     milvus_db_name: str = os.environ.get("MILVUS_DB_NAME", "cdc_rag")
@@ -27,7 +30,9 @@ class Settings(BaseSettings):
     chunk_overlap: int = 200
 
     # model config
-    bi_encoder_model: str = "text-embedding-3-small"
+    embedding_provider: str = os.environ.get("EMBEDDING_PROVIDER", "openai")
+    embedding_api_key: str = os.environ.get("EMBEDDING_API_KEY", "")
+    bi_encoder_model: str = os.environ.get("BI_ENCODER_MODEL", "text-embedding-3-small")
 
 
 settings = Settings()
