@@ -10,7 +10,8 @@ from app.agent.indexing.state import AgentState
 from app.core.config import settings
 from app.rag.chunker import get_chunker
 from app.rag.db import VectorClient, get_vector_client
-from app.rag.embeddings import get_bi_encoder
+from app.rag.embeddings import get_bi_encoder, get_embedding
+from app.services.llm.tokenizer import get_tokenizer
 from app.utils import get_request_id
 
 rag_router = APIRouter(prefix="/rag", tags=["rag"])
@@ -40,3 +41,14 @@ def ingest_document(
             if "progress_status" in status_updates:
                 print(status_updates["progress_status"])
     return None
+
+
+@rag_router.post("/embed")
+def search_documents(
+    query: str,
+    embed: Annotated[Embeddings, Depends(get_embedding)],
+    tokenizer: Annotated[Embeddings, Depends(get_tokenizer)],
+    vector_db: Annotated[VectorClient, Depends(get_vector_client)],
+    request_id: Annotated[str, Depends(get_request_id)],
+) -> list[float]:
+    return embed.embed_query(query, tokenizer)

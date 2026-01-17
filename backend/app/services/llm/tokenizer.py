@@ -1,27 +1,37 @@
+from functools import lru_cache
+
 import tiktoken
+
+from app.core.config import settings
 
 
 class Tokenizer:
-    def __init__(self):
+    def __init__(self, model):
         self.tokenizer_model = None
+        self.model: str = model
 
-    def get_tokenizer_from_model(self, model: str):
+    def get_tokenizer(self):
         if self.tokenizer_model is not None:
             return self.tokenizer_model
 
-        if model.startswith("o") or model.startswith("gpt"):
-            encoding_name = tiktoken.encoding_name_for_model(model)
-            self.tokenizer_model = tiktoken.encoding_for_model(encoding_name)
+        if self.model.startswith("o") or self.model.startswith("gpt"):
+            encoding_name = tiktoken.encoding_name_for_model(self.model)
+            self.tokenizer_model = tiktoken.get_encoding(encoding_name)
             return self.tokenizer_model
-        elif model.startswith("claude"):
+        elif self.model.startswith("claude"):
             # To be filled up later using claude's tokenizer
             pass
-        elif model.startswith("gemini"):
+        elif self.model.startswith("gemini"):
             # To be filled up later using gemini's tokenizer
             pass
         else:
             print("[ERROR] The model given is not found")
 
-    def compute_token_cnt(self, text: str, model_name: str) -> int:
-        tokenizer = self.get_tokenizer_from_model(model=model_name)
+    def compute_token_cnt(self, text: str) -> int:
+        tokenizer = self.get_tokenizer()
         return len(tokenizer.encode(text))
+
+
+@lru_cache
+def get_tokenizer() -> Tokenizer:
+    return Tokenizer(settings.llm_model_name)
