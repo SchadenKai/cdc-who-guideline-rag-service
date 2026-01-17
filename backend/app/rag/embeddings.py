@@ -11,6 +11,7 @@ from app.logger import app_logger
 
 # TODO: replace this with adapter
 from app.services.llm.tokenizer import TokenizerService
+from app.services.llm.calculate_cost import calculate_cost
 
 
 def get_bi_encoder() -> Embeddings:
@@ -52,7 +53,12 @@ class EmbeddingService:
         token_cnt = tokenizer.compute_token_cnt(text)
         self.logger.info(f"Total token count: {token_cnt}")
         # get the model name and provider from settings
-
+        input_cost, _, total_cost = calculate_cost(
+            model_name=self.settings.llm_model_name,
+            input_token=token_cnt,
+            formatted=True,
+        )
+        self.logger.info(f"Input cost: ${input_cost}, Total cost: ${total_cost}")
         # run the logic
         embed = self.client
         return embed.embed_query(text)
@@ -61,10 +67,16 @@ class EmbeddingService:
         self, documents: list[str], tokenizer: TokenizerService
     ) -> list[float]:
         # compute the number of tokens based on the model
-        token_cnt = tokenizer.compute_token_cnt(documents)
-        self.logger.info(f"Total token count: {token_cnt}")
+        token_counts = tokenizer.compute_token_cnt(documents)
+        self.logger.info(f"Total token count: {token_counts}")
         # get the model name and provider from settings
-
+        for token_cnt in token_counts:
+            input_cost, _, total_cost = calculate_cost(
+                model_name=self.settings.llm_model_name,
+                input_token=token_cnt,
+                formatted=True,
+            )
+            self.logger.info(f"Input cost: ${input_cost}, Total cost: ${total_cost}")
         # run the logic
         embed = self.client
         return embed.embed_documents(documents)

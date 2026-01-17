@@ -8,6 +8,7 @@ from langchain_text_splitters import (
 )
 
 
+# TODO: Make this a factory instead
 def get_chunker(
     chunking_type: Literal["semantic", "recursive", "md"],
 ) -> TextSplitter:
