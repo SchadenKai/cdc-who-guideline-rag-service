@@ -101,7 +101,7 @@ def get_embedding() -> EmbeddingService:
         "api_key": settings.openai_api_key,
         "model": settings.bi_encoder_model,
         "dimensions": settings.vector_dim,
-        "max_retry": 5,
+        "max_retries": 5,
         "request_timeout": None,
     }
     return EmbeddingService(
