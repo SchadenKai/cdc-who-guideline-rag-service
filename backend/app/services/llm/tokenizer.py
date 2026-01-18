@@ -27,10 +27,10 @@ class TokenizerService:
         else:
             print("[ERROR] The model given is not found")
 
-    def compute_token_cnt(self, text: str | list[str]) -> int | list[int]:
+    def compute_token_cnt(self, text: str | list[str]) -> int:
         tokenizer = self.get_tokenizer()
         if isinstance(text, list):
-            return [len(tokens) for tokens in tokenizer.encode_batch(text)]
+            return sum([len(tokens) for tokens in tokenizer.encode_batch(text)])
         return len(tokenizer.encode(text))
 
 
