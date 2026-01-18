@@ -27,6 +27,7 @@ class EmbeddingService:
 
     @property
     def client(self) -> Embeddings:
+        # TODOL Refactor into factory
         if self._client is None:
             if self.provider == "openai":
                 self._client = OpenAIEmbeddings(**self.config)
@@ -35,7 +36,7 @@ class EmbeddingService:
             elif self.provider == "azure":
                 self._client = AzureOpenAIEmbeddings(**self.config)
             # only make this available during development
-            elif self.provider == "fake":
+            elif self.provider == "fake" and settings.dev_mode:
                 self._client = FakeEmbeddings(**self.config)
             elif self.provider == "nomic":
                 self._client = NomicEmbeddings(**self.config)
@@ -95,10 +96,13 @@ class EmbeddingService:
 
 @lru_cache
 def get_embedding() -> EmbeddingService:
+    # currently only designed for openai
     _config = {
         "api_key": settings.openai_api_key,
         "model": settings.bi_encoder_model,
         "dimensions": settings.vector_dim,
+        "max_retry": 5,
+        "request_timeout": None,
     }
     return EmbeddingService(
         provider=settings.llm_provider,
