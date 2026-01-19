@@ -12,5 +12,6 @@ class AgentState(BaseModel):
     chunked_documents: Optional[list[Document]] = None
     final_documents: Optional[list[RelevantDocs]] = None
     progress_status: Optional[ProgressStatusEnum] = None
+    run_metadata: Optional[dict] = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True)

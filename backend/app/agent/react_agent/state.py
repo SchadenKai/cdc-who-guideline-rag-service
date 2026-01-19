@@ -1,4 +1,4 @@
-from typing import Annotated, Sequence
+from typing import Annotated, Optional, Sequence
 
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
@@ -9,3 +9,4 @@ class AgentState(BaseModel):
     messages: Annotated[Sequence[BaseMessage], add_messages] = Field(
         default_factory=list
     )
+    run_metadata: Optional[dict] = None
