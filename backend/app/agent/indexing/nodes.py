@@ -3,7 +3,7 @@ from langgraph.runtime import Runtime
 
 from app.agent.indexing.context import AgentContext
 from app.agent.indexing.state import AgentState
-from app.logger import app_logger
+
 from .models import ProgressStatusEnum
 
 
@@ -41,10 +41,10 @@ def chunker_node(state: AgentState, runtime: Runtime[AgentContext]) -> AgentStat
 
 
 def doc_builder_node(state: AgentState, runtime: Runtime[AgentContext]) -> AgentState:
-    encoder = runtime.context.encoder
+    embedding = runtime.context.embedding
     tokenizer = runtime.context.tokenizer
-    if encoder is None:
-        print("[ERROR] Encoder / Embedding model cannot be left empty")
+    if embedding is None:
+        print("[ERROR] embedding / Embedding model cannot be left empty")
         return state
     if state.chunked_documents is None:
         print("[ERROR] Chunked documents from the chunker cannot be empty")

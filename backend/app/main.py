@@ -9,6 +9,7 @@ from app.logger import app_logger
 from app.rag.db import VectorClient, get_vector_client
 from app.rag.embeddings import get_embedding
 from app.routes.v1.main import v1_router
+from app.services.llm.factory import test_chat_model
 
 
 @asynccontextmanager
@@ -18,7 +19,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator:
     # vector_db.delete_collection()
     vector_db.setup()
     vector_db.load_collection()
-    # vector_db.smoke_test()
+    vector_db.smoke_test()
+    app_logger.info("Initializing chat model")
+    test_chat_model()
     app_logger.info("Initializing embedding services")
     embedding_service = get_embedding()
     embedding_service.test_client_on_startup()

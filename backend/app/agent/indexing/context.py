@@ -8,7 +8,7 @@ from app.services.llm.tokenizer import TokenizerService
 
 class AgentContext(BaseModel):
     chunker: TextSplitter
-    encoder: EmbeddingService
+    embedding: EmbeddingService
     tokenizer: TokenizerService
     db_client: MilvusClient
     collection_name: str
