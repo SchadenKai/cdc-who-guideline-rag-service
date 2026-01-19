@@ -1,9 +1,11 @@
 from langchain_anthropic.chat_models import ChatAnthropic
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_google_genai.chat_models import ChatGoogleGenerativeAI
+from langchain_nebius.chat_models import ChatNebius
 from langchain_openai import ChatOpenAI
 
 from app.core.config import settings
+from app.logger import app_logger
 
 
 def get_llm_provider() -> BaseChatModel:
@@ -17,8 +19,7 @@ def get_llm_provider() -> BaseChatModel:
             model_name=settings.llm_model_name, api_key=settings.llm_api_key
         )
     elif provider == "nebius":
-        return ChatOpenAI(
-            base_url="https://api.tokenfactory.nebius.com/v1",
+        return ChatNebius(
             api_key=settings.llm_api_key,
             model=settings.llm_model_name,
         )
@@ -28,6 +29,8 @@ def get_llm_provider() -> BaseChatModel:
         )
     return ChatOpenAI(model=settings.llm_model_name)
 
-class ChatLLMService:
-    def __init__(self):
-        pass
+
+def test_chat_model():
+    chat_llm = get_llm_provider()
+    res = chat_llm.invoke("")
+    app_logger.info(f"Testing chat model results: {res.content}")
