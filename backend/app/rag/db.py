@@ -22,14 +22,19 @@ class VectorClient:
     def client(self) -> MilvusClient:
         if self._client:
             return self._client
-        self._client = MilvusClient(
-            uri=settings.milvus_url,
-            user=settings.milvus_user,
-            password=settings.milvus_password,
-        )
+        if settings.milvus_token:
+            self._client = MilvusClient(
+                uri=settings.milvus_url, token=settings.milvus_token
+            )
+        else:
+            self._client = MilvusClient(
+                uri=settings.milvus_url,
+                user=settings.milvus_user,
+                password=settings.milvus_password,
+            )
         return self._client
 
-    def health_check(self) -> str:
+    def health_check(self) -> dict:
         client = self.client
         try:
             return {
@@ -47,10 +52,10 @@ class VectorClient:
             f"[DEBUG] Health check: {client.get_server_type()}:"
             f" {client.get_server_version()}"
         )
-
-        if settings.milvus_db_name not in client.list_databases():
-            client.create_database(db_name=settings.milvus_db_name)
-        client.use_database(settings.milvus_db_name)
+        if settings.milvus_token == "":
+            if settings.milvus_db_name not in client.list_databases():
+                client.create_database(db_name=settings.milvus_db_name)
+            client.use_database(settings.milvus_db_name)
 
         if client.has_collection(settings.milvus_collection_name):
             print("[DEBUG] Collection already exists in the database.")

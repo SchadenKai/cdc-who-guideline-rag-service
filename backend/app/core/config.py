@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     milvus_collection_name: str = os.environ.get("MILVUS_COLLECTION_NAME", "test")
     milvus_user: str = os.environ.get("MILVUS_USER", "root")
     milvus_password: str = os.environ.get("MILVUS_PASSWORD", "Milvus")
+    milvus_token: str = os.environ.get("MILVUS_TOKEN", "")
 
     # vector config
     vector_dim: int = 3584

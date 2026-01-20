@@ -10,6 +10,7 @@ from app.rag.db import VectorClient, get_vector_client
 from app.rag.embeddings import get_embedding
 from app.routes.v1.main import v1_router
 from app.services.llm.factory import get_chat_model_service
+from fastapi.middleware.cors import CORSMiddleware
 
 
 @asynccontextmanager
@@ -39,6 +40,14 @@ app = FastAPI(
 )
 
 app.include_router(v1_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Configurable via environment variable
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/health")
