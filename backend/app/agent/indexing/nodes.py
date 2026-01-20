@@ -1,10 +1,9 @@
 from langchain_core.documents import Document
 from langgraph.runtime import Runtime
 
-from app.agent.indexing.context import AgentContext
-from app.agent.indexing.state import AgentState
-
+from .context import AgentContext
 from .models import ProgressStatusEnum
+from .state import AgentState
 
 
 def document_loader(state: AgentState) -> AgentState:
@@ -16,10 +15,10 @@ def document_loader(state: AgentState) -> AgentState:
     fake_docs = Document(
         page_content="This is just a testing", metadata={"source": "http://testing.com"}
     )
-    return AgentState(
-        raw_document=[fake_docs],
-        progress_status=ProgressStatusEnum.LOADING_FILE,
-    )
+    return {
+        "raw_document": [fake_docs],
+        "progress_status": ProgressStatusEnum.LOADING_FILE,
+    }
 
 
 def chunker_node(state: AgentState, runtime: Runtime[AgentContext]) -> AgentState:
@@ -35,9 +34,7 @@ def chunker_node(state: AgentState, runtime: Runtime[AgentContext]) -> AgentStat
 
     docs = chunker.split_documents(state.raw_document)
 
-    return AgentState(
-        chunked_documents=docs, progress_status=ProgressStatusEnum.CHUNKING
-    )
+    return {"chunked_documents": docs, "progress_status": ProgressStatusEnum.CHUNKING}
 
 
 def doc_builder_node(state: AgentState, runtime: Runtime[AgentContext]) -> AgentState:
@@ -68,16 +65,16 @@ def doc_builder_node(state: AgentState, runtime: Runtime[AgentContext]) -> Agent
         }
         final_doc_list.append(final_doc)
 
-    return AgentState(
-        final_documents=final_doc_list,
-        progress_status=ProgressStatusEnum.BUILDING_DOCS,
-        run_metadata={
+    return {
+        "final_documents": final_doc_list,
+        "progress_status": ProgressStatusEnum.BUILDING_DOCS,
+        "run_metadata": {
             "token_count": embed_results.token_count,
-            "total_cost": embed_results.total_cost,
+            "total_cost": f"${embed_results.total_cost:.10f}",
             "duration_ms": embed_results.duration_ms,
             "event": embed_results.event,
         },
-    )
+    }
 
 
 def indexing_node(state: AgentState, runtime: Runtime[AgentContext]) -> AgentState:
@@ -96,4 +93,4 @@ def indexing_node(state: AgentState, runtime: Runtime[AgentContext]) -> AgentSta
 
     data = [doc.model_dump() for doc in state.final_documents]
     db_client.insert(collection_name=collection_name, data=data)
-    return AgentState(progress_status=ProgressStatusEnum.DONE)
+    return state.model_copy(update={"progress_status": ProgressStatusEnum.DONE})

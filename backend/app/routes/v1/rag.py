@@ -40,8 +40,8 @@ def ingest_document(
     final_response = {}
     for res in agent.stream(input=init_state, context=context, config=config):
         for node_name, state in res.items():
-            if "END" in node_name:
-                final_response = state["run_metadata"]
+            if "indexing_node" in node_name:
+                final_response = state
     return final_response
 
 

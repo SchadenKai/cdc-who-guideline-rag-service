@@ -72,6 +72,9 @@ class TokenizerService:
                 )
                 tokens = tokenizer(text)
                 tokens = tokens["input_ids"][0]
+                if tokens is None:
+                    app_logger.error("Tokens is missing")
+                    raise ValueError("Tokens is missing") from e
                 return len(tokens)
         return len(tokenizer.encode(text))
 
