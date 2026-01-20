@@ -1,22 +1,24 @@
+import asyncio
+
+from crawl4ai import CrawlResult
 from langchain_core.documents import Document
 from langgraph.runtime import Runtime
+
+from app.services.scrapper import simple_crawler
 
 from .context import AgentContext
 from .models import ProgressStatusEnum
 from .state import AgentState
 
 
-def document_loader(state: AgentState) -> AgentState:
-    """
-    1. Loads the file from S3 Storage using the file path from state.filepath
-    2. Parse the file to retrieve text / even convert to markdown
-    3. Update the state.raw_document
-    """
-    fake_docs = Document(
-        page_content="This is just a testing", metadata={"source": "http://testing.com"}
-    )
+def web_scrapper(state: AgentState) -> AgentState:
+    results: CrawlResult = asyncio.run(simple_crawler(state.website_url))
+    results = results.markdown
+    print(results)
+    doc = Document(page_content=results, metadata={"source": state.website_url})
+
     return {
-        "raw_document": [fake_docs],
+        "raw_document": [doc],
         "progress_status": ProgressStatusEnum.LOADING_FILE,
     }
 
@@ -24,7 +26,6 @@ def document_loader(state: AgentState) -> AgentState:
 def chunker_node(state: AgentState, runtime: Runtime[AgentContext]) -> AgentState:
     chunker = runtime.context.chunker
 
-    # TODO: Change this into custom excetion to comply with sonarqube
     if chunker is None:
         print("[ERROR] Chunker / Text splitter cannot be left empty")
         return state

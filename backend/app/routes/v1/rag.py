@@ -19,6 +19,7 @@ rag_router = APIRouter(prefix="/rag", tags=["rag"])
 
 @rag_router.post("/ingest")
 def ingest_document(
+    website_url: str,
     encoder: Annotated[EmbeddingService, Depends(get_embedding)],
     vector_db: Annotated[VectorClient, Depends(get_vector_client)],
     tokenizer: Annotated[TokenizerService, Depends(get_tokenizer_service)],
@@ -28,7 +29,7 @@ def ingest_document(
     collection_name = settings.milvus_collection_name
     db_client = vector_db.client
 
-    init_state = AgentState(file_path="test")
+    init_state = AgentState(website_url=website_url)
     context = AgentContext(
         chunker=chunker,
         embedding=encoder,
@@ -41,7 +42,7 @@ def ingest_document(
     for res in agent.stream(input=init_state, context=context, config=config):
         for node_name, state in res.items():
             if "indexing_node" in node_name:
-                final_response = state
+                final_response = state["run_metadata"]
     return final_response
 
 
