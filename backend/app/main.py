@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.logger import app_logger
@@ -10,7 +11,6 @@ from app.rag.db import VectorClient, get_vector_client
 from app.rag.embeddings import get_embedding
 from app.routes.v1.main import v1_router
 from app.services.llm.factory import get_chat_model_service
-from fastapi.middleware.cors import CORSMiddleware
 
 
 @asynccontextmanager
