@@ -5,8 +5,76 @@ from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langgraph.runtime import Runtime
 
 from .context import AgentContext
-from .prompts import HUMAN_MESSAGE_TEMPLATE, REPORT_GENERATION_SYSTEM_PROMPT
+from .models import SafetyClassificationEnum, SafetyClassifierSOModel
+from .prompts import (
+    HUMAN_MESSAGE_TEMPLATE,
+    REFUSAL_AGENT_HUMAN_PROMPT_TEMPLATE,
+    REFUSAL_AGENT_SYSTEM_PROMPT,
+    REPORT_GENERATION_SYSTEM_PROMPT,
+    SAFETY_CLASSIFIER_HUMAN_MESSAGE_TEMPLATE,
+    SAFETY_CLASSIFIER_SYSTEM_PROMPT,
+)
 from .state import AgentState
+
+_SAFETY_CLASSIFICATION_THRESHOLD = 0.3
+
+
+def safety_classifier_node(
+    state: AgentState, runtime: Runtime[AgentContext]
+) -> AgentState:
+    """
+    Classifies the user's query in terms of the SafetyClassfication
+    """
+    if state.input_query is None:
+        raise ValueError("Missing user input query")
+    if runtime.context.chat_model is None:
+        raise ValueError("Missing vector database client")
+
+    messages: list[BaseMessage] = [
+        SystemMessage(content=SAFETY_CLASSIFIER_SYSTEM_PROMPT),
+        HumanMessage(
+            content=SAFETY_CLASSIFIER_HUMAN_MESSAGE_TEMPLATE.format(
+                user_query=state.input_query
+            )
+        ),
+    ]
+    chat_model = runtime.context.chat_model.with_structured_output(
+        schema=SafetyClassifierSOModel
+    )
+    response: SafetyClassifierSOModel = chat_model.invoke(messages)
+    return state.model_copy(update={"safety_classification": response})
+
+
+def is_query_safe(state: AgentState) -> Literal["embed_query", "refusal_node"]:
+    if (
+        state.safety_classification.classification == SafetyClassificationEnum.SAFE
+        or state.safety_classification.confidence_score
+        < _SAFETY_CLASSIFICATION_THRESHOLD
+    ):
+        return "embed_query"
+    return "refusal_node"
+
+
+def refusal_node(state: AgentState, runtime: Runtime[AgentContext]) -> AgentState:
+    if state.input_query is None:
+        raise ValueError("Missing user input query")
+    if state.safety_classification.supporting_args is None:
+        raise ValueError("Supporting arguments cannot be empty")
+    if runtime.context.chat_model is None:
+        raise ValueError("Missing vector database client")
+
+    messages: list[BaseMessage] = [
+        SystemMessage(content=REFUSAL_AGENT_SYSTEM_PROMPT),
+        HumanMessage(
+            content=REFUSAL_AGENT_HUMAN_PROMPT_TEMPLATE.format(
+                user_query=state.input_query,
+                classification=state.safety_classification.classification,
+                supporting_args=state.safety_classification.supporting_args,
+            )
+        ),
+    ]
+    res = runtime.context.chat_model.invoke(messages)
+    return state.model_copy(update={"final_answer": res.content})
 
 
 def embed_query(state: AgentState, runtime: Runtime[AgentContext]) -> AgentState:

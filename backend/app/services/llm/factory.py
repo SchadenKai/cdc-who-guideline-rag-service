@@ -47,6 +47,8 @@ class ChatModelService:
         res = self.client.invoke("")
         app_logger.info(f"Testing chat model results: {res.content}")
 
+    # TODO: allow setting of model name and provider
+
 
 @lru_cache
 def get_chat_model_service() -> ChatModelService:

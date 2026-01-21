@@ -19,3 +19,28 @@ class ProgressStatusEnum(enum.Enum):
     BUILDING_DOCS = "Building Final Document"
     INDEXING = "Indexing"
     DONE = "Done"
+
+
+class SafetyClassificationEnum(enum.Enum):
+    SAFE = "Safe"
+    UNSAFE_MEDICAL = "Unsafe medical"
+    UNSAFE_HARMFUL = "Unsafe harmful"
+    OFF_TOPIC = "off topic"
+
+
+class SafetyClassifierSOModel(BaseModel):
+    classification: SafetyClassificationEnum = Field(
+        "classification of the user's query based on the available classes"
+    )
+    supporting_args: list[str] = Field(
+        description="List of arguments that supports the classification claim"
+    )
+    confidence_score: float = Field(
+        description=(
+            "Indicate the confidence score for the given classification."
+            "Be skeptical when it comes to classifying user queries ensuring"
+            "priority towards precision classification rather than recall."
+        ),
+        ge=0.0,
+        le=1.0,
+    )

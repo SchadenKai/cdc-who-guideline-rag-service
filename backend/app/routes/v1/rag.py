@@ -80,10 +80,10 @@ def retrieve_documents(
     final_response = {}
     for res in inference_agent.stream(input=init_state, context=context, config=config):
         for _, state in res.items():
-            if state:
+            if state.get("embedded_query"):
                 state = cast(dict, state)
                 state.pop("embedded_query")
-                final_response = state
+            final_response = state
     return final_response
 
 

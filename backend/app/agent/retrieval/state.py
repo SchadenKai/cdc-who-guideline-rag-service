@@ -2,6 +2,8 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
+from .models import SafetyClassifierSOModel
+
 
 class AgentState(BaseModel):
     input_query: str
@@ -10,5 +12,6 @@ class AgentState(BaseModel):
     documents: Optional[list[dict]] = None
     sources: Optional[list[str]] = None
     run_metadata: Optional[dict] = None
+    safety_classification: Optional[SafetyClassifierSOModel] = None
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
