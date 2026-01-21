@@ -1,0 +1,10 @@
+{"query": "What are the common symptoms of the flu?", "expected_url_partial": "cdc.gov/flu/symptoms"}
+{"query": "How can I prevent heart disease?", "expected_url_partial": "cdc.gov/heartdisease"}
+{"query": "What is the recommended physical activity for adults?", "expected_url_partial": "cdc.gov/physicalactivity"}
+{"query": "Does smoking cause cancer?", "expected_url_partial": "cdc.gov/tobacco"}
+{"query": "When should I use antibiotics?", "expected_url_partial": "cdc.gov/antibiotic-use"}
+{"query": "Global statistics on malaria cases", "expected_url_partial": "who.int/news-room/fact-sheets/detail/malaria"}
+{"query": "What are the main causes of diabetes?", "expected_url_partial": "who.int/news-room/fact-sheets/detail/diabetes"}
+{"query": "How is HIV transmitted?", "expected_url_partial": "who.int/news-room/fact-sheets/detail/hiv-aids"}
+{"query": "Symptoms of Dengue fever", "expected_url_partial": "who.int/news-room/fact-sheets/detail/dengue"}
+{"query": "Key facts about asthma", "expected_url_partial": "who.int/news-room/fact-sheets/detail/asthma"}
