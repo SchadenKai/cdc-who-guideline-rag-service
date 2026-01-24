@@ -1,8 +1,5 @@
-from functools import lru_cache
-
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph import StateGraph
-from langgraph.graph.state import CompiledStateGraph
 
 from .nodes import chunker_node, doc_builder_node, indexing_node, web_scrapper
 from .state import AgentState
@@ -24,8 +21,3 @@ graph.add_edge("doc_builder_node", "indexing_node")
 checkpointer = InMemorySaver()
 
 agent = graph.compile(checkpointer=checkpointer)
-
-
-@lru_cache
-def get_indexing_agent() -> CompiledStateGraph:
-    return agent

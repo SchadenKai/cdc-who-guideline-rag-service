@@ -1,4 +1,4 @@
-from functools import lru_cache
+
 from typing import Literal
 
 from langchain_text_splitters import (
@@ -27,8 +27,3 @@ class ChunkerService:
         if chunker is None:
             raise ValueError("Chunker is not available")
         return chunker(**kwargs)
-
-
-@lru_cache
-def get_chunker() -> ChunkerService:
-    return ChunkerService()
