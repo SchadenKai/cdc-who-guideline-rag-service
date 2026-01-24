@@ -61,7 +61,7 @@ def get_indexing_service(
 
 def get_indexing_service_manual() -> IndexingService:
     chunker_service = get_chunker()
-    settings = get_app_settings
+    settings = get_app_settings()
     embedding_service = get_embedding(settings)
     tokenizer_service = get_tokenizer_service(settings)
     vector_db_service = get_vector_client(embedding_service, tokenizer_service)
