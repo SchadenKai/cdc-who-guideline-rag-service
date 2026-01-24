@@ -38,7 +38,9 @@ class IndexingService:
 
         init_state = IndexingAgentState(website_url=website_url)
         context = IndexingAgentContext(
-            chunker=self.chunker_service.get("recursive"),
+            chunker=self.chunker_service.get(
+                chunker_name="recursive", chunk_size=1021, chunk_overlap=10
+            ),
             embedding=self.embedding_service,
             tokenizer=self.tokenizer_service,
             db_client=db_client,

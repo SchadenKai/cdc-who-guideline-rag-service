@@ -15,10 +15,7 @@ class ChunkerService:
     def __init__(self):
         self._chunkers: dict[_CHUNKERS_NAME, TextSplitter] = {
             "semantic": SentenceTransformersTokenTextSplitter,
-            "recursive": RecursiveCharacterTextSplitter(
-                chunk_size=1021,
-                chunk_overlap=10,
-            ),
+            "recursive": RecursiveCharacterTextSplitter,
             "markdown": MarkdownTextSplitter,
         }
 
