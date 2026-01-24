@@ -6,14 +6,18 @@ from langgraph.graph.state import CompiledStateGraph
 
 from app.core.config import Settings
 from app.rag.chunker import ChunkerService
-from app.rag.db import VectorClient, get_vector_client
-from app.rag.embeddings import EmbeddingService, get_embedding
+from app.rag.db import VectorClient
+from app.rag.embeddings import EmbeddingService
 from app.routes.dependencies.chunker import get_chunker
+from app.routes.dependencies.embedding import get_embedding
 from app.routes.dependencies.indexing_agent import get_indexing_agent
+from app.routes.dependencies.llm import get_chat_model_service
 from app.routes.dependencies.retriever_agent import get_retriever_agent
 from app.routes.dependencies.settings import get_app_settings
-from app.services.llm.factory import ChatModelService, get_chat_model_service
-from app.services.llm.tokenizer import TokenizerService, get_tokenizer_service
+from app.routes.dependencies.tokenizer import get_tokenizer_service
+from app.routes.dependencies.vector_db import get_vector_client
+from app.services.llm.factory import ChatModelService
+from app.services.llm.tokenizer import TokenizerService
 from app.services.rag import IndexingService, RetrievalService
 
 

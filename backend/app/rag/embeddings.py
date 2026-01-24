@@ -1,6 +1,4 @@
 import time
-from functools import lru_cache
-from logging import Logger
 
 from langchain_core.embeddings import Embeddings, FakeEmbeddings
 from langchain_google_genai.embeddings import GoogleGenerativeAIEmbeddings
@@ -9,7 +7,6 @@ from langchain_nomic.embeddings import NomicEmbeddings
 from langchain_openai.embeddings import AzureOpenAIEmbeddings, OpenAIEmbeddings
 
 from app.core.config import Settings, settings
-from app.logger import app_logger
 from app.rag.models import EmbeddingResponseModel
 from app.services.llm.calculate_cost import calculate_cost
 
@@ -19,12 +16,11 @@ from app.services.llm.tokenizer import TokenizerService
 
 # TODO: check if this is the best way to import deps
 class EmbeddingService:
-    def __init__(self, provider, config, setting, logger):
+    def __init__(self, provider, config, setting):
         self._client: Embeddings | None = None
         self.provider: str = provider
         self.config: dict = config
         self.settings: Settings = setting
-        self.logger: Logger = logger
 
     @property
     def client(self) -> Embeddings:
@@ -101,19 +97,3 @@ class EmbeddingService:
         )
 
 
-@lru_cache
-def get_embedding() -> EmbeddingService:
-    # currently only designed for openai
-    _config = {
-        "api_key": settings.llm_api_key,
-        "model": settings.bi_encoder_model,
-        # "dimensions": settings.vector_dim,
-        # "max_retries": 5,
-        # "request_timeout": None,
-    }
-    return EmbeddingService(
-        provider=settings.llm_provider,
-        config=_config,
-        setting=settings,
-        logger=app_logger,
-    )

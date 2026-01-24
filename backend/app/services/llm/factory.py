@@ -1,5 +1,3 @@
-from functools import lru_cache
-
 from langchain_anthropic.chat_models import ChatAnthropic
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_google_genai.chat_models import ChatGoogleGenerativeAI
@@ -46,14 +44,3 @@ class ChatModelService:
     def test_chat_model(self) -> None:
         res = self.client.invoke("")
         app_logger.info(f"Testing chat model results: {res.content}")
-
-    # TODO: allow setting of model name and provider
-
-
-@lru_cache
-def get_chat_model_service() -> ChatModelService:
-    return ChatModelService(
-        provider=settings.llm_provider,
-        model_name=settings.llm_model_name,
-        api_key=settings.llm_api_key,
-    )

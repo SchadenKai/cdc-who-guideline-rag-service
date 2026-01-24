@@ -1,5 +1,3 @@
-from functools import lru_cache
-
 import tiktoken
 from transformers import AutoTokenizer
 
@@ -77,13 +75,3 @@ class TokenizerService:
                     raise ValueError("Tokens is missing") from e
                 return len(tokens)
         return len(tokenizer.encode(text))
-
-
-@lru_cache
-def get_tokenizer_service() -> TokenizerService:
-    return TokenizerService(
-        model=settings.llm_model_name,
-        embedding=settings.bi_encoder_model,
-        model_provider=settings.llm_provider,
-        embedding_provider=settings.embedding_provider,
-    )

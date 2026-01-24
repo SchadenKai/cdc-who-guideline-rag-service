@@ -1,11 +1,9 @@
-from functools import lru_cache
-
 from pymilvus import DataType, IndexType, MilvusClient
 
 from app.core.config import settings
 from app.logger import app_logger
-from app.rag.embeddings import EmbeddingService, get_embedding
-from app.services.llm.tokenizer import TokenizerService, get_tokenizer_service
+from app.rag.embeddings import EmbeddingService
+from app.services.llm.tokenizer import TokenizerService
 
 from ._smoke_test_docs import docs as test_docs
 
@@ -154,10 +152,3 @@ class VectorClient:
         for res in results:
             print(res[0].entity.get("text"))
             print(res[0].entity.get("source"))
-
-
-@lru_cache()
-def get_vector_client() -> VectorClient:
-    embedding = get_embedding()
-    tokenizer = get_tokenizer_service()
-    return VectorClient(embedding, tokenizer)
