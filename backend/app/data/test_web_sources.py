@@ -11,7 +11,7 @@ urls = [
     "https://www.who.int/news/item/08-02-2024-who-medically-important-antimicrobial-list-2024",
     "https://www.who.int/news/item/21-05-2025-message-by-the-director-of-the-department-of-immunization--vaccines-and-biologicals-at-who---may-2025",
     # CDC Releases & Reports
-    "https://www.cdc.gov/infection-control/hcp/core-practices/index.html",
+    "https://www.cdc.gov/media/releases/2026/2026-cdc-acts-on-presidential-memorandum-to-update-childhood-immunization-schedule.html",
     "https://www.cdc.gov/media/releases/2025/cdc-immunization-schedule-adopts-individual-based-decision.html",
     "https://www.cdc.gov/media/releases/2025/2025-hepatitis-b-immunization.html",
     "https://www.cdc.gov/media/releases/2025/2025-acip-recommends-individual-based-decision-making-for-hepatitis-b-vaccine-for-infants-born-to-women.html",
