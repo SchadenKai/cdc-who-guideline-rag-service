@@ -19,3 +19,8 @@ class ProgressStatusEnum(enum.Enum):
     BUILDING_DOCS = "Building Final Document"
     INDEXING = "Indexing"
     DONE = "Done"
+
+class SourceClass(enum.Enum):
+    WHO = "who"
+    CDC = "cdc"
+    OTHERS = "others"

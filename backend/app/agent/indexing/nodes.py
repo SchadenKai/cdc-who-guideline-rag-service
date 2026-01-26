@@ -1,5 +1,7 @@
 import asyncio
+import datetime
 import json
+from zoneinfo import ZoneInfo
 
 from crawl4ai import CrawlResult
 from langchain_core.documents import Document
@@ -8,8 +10,9 @@ from langgraph.runtime import Runtime
 from app.services.scrapper import structured_output_scrapper
 
 from .context import AgentContext
-from .models import ProgressStatusEnum
+from .models import ProgressStatusEnum, SourceClass
 from .state import AgentState
+from .utils import clean_chunk_content, hash_text
 
 
 def web_scrapper(state: AgentState) -> AgentState:
@@ -47,6 +50,61 @@ def chunker_node(state: AgentState, runtime: Runtime[AgentContext]) -> AgentStat
     docs = chunker.split_documents(state.raw_document)
 
     return {"chunked_documents": docs, "progress_status": ProgressStatusEnum.CHUNKING}
+
+
+def metadata_builder_node(
+    state: AgentState, runtime: Runtime[AgentContext]
+) -> AgentState:
+    if state.chunked_documents is None:
+        print("[ERROR] Chunked documents cannot be empty")
+        return state
+    if runtime.context.collection_name is None:
+        print("[ERROR] Collection name cannot be empty")
+        return state
+    if runtime.context.settings is None:
+        print("[ERROR] Settings cannot be empty")
+        return state
+
+    timezone = ZoneInfo(runtime.context.settings.timezone)
+    final_doc_list = []
+    for i, doc in enumerate(state.chunked_documents):
+        # hashing metadata
+        cleaned_text = clean_chunk_content(doc.page_content)
+        content_hash = hash_text(cleaned_text)
+        duplicate = runtime.context.db_client.query(
+            filter=f"content_hash  == '{content_hash}'",
+            collection_name=runtime.context.collection_name,
+            output_fields=["id"],
+        )
+        if duplicate:
+            print(
+                "[ERROR] Duplicate found. Removing duplicate"
+                "chunk from the list of chunks"
+            )
+            continue
+        doc.metadata["content_hash"] = content_hash
+
+        # positional metadata
+        doc.metadata["chunk_index"] = i
+        doc.metadata["prev_chunk_id"] = i - 1 if i > 0 else 0
+        doc.metadata["next_chunk_id"] = (
+            i + 1 if i < len(state.chunked_documents) else len(state.chunked_documents)
+        )
+
+        # datetime metadata
+        doc.metadata["last_updated"] = datetime.datetime.now(tz=timezone)
+
+        # category metadata
+        if SourceClass.WHO.value.lower() in state.website_url:
+            source_class = SourceClass.WHO
+        elif SourceClass.CDC.value.lower() in state.website_url:
+            source_class = SourceClass.CDC
+        else:
+            source_class = SourceClass.OTHERS
+        doc.metadata["source_class"] = source_class
+
+        final_doc_list.append(doc)
+    return state.model_copy(update={"chunked_documents": final_doc_list})
 
 
 def doc_builder_node(state: AgentState, runtime: Runtime[AgentContext]) -> AgentState:
