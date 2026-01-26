@@ -1,10 +1,11 @@
 import asyncio
+import json
 
 from crawl4ai import CrawlResult
 from langchain_core.documents import Document
 from langgraph.runtime import Runtime
 
-from app.services.scrapper import simple_crawler
+from app.services.scrapper import structured_output_scrapper
 
 from .context import AgentContext
 from .models import ProgressStatusEnum
@@ -12,10 +13,20 @@ from .state import AgentState
 
 
 def web_scrapper(state: AgentState) -> AgentState:
-    results: CrawlResult = asyncio.run(simple_crawler(state.website_url))
-    results = results.markdown
+    results: CrawlResult = asyncio.run(structured_output_scrapper(state.website_url))
+    results = json.loads(results.extracted_content)
+    results: dict = results[0]
     print(results)
-    doc = Document(page_content=results, metadata={"source": state.website_url})
+    doc = Document(
+        page_content=results["page_content"],
+        metadata={
+            "source": state.website_url,
+            "page_title": results["title"],
+            "published_date": results["date"],
+        },
+    )
+    if results.get("tags"):
+        doc.metadata["tags"] = [tag["name"] for tag in results["tags"]]
 
     return {
         "raw_document": [doc],
