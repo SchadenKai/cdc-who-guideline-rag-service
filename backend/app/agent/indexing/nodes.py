@@ -78,8 +78,8 @@ def metadata_builder_node(
         )
         if duplicate:
             print(
-                "[ERROR] Duplicate found. Removing duplicate"
-                "chunk from the list of chunks"
+                "[WARNING] Duplicate found. Removing duplicate "
+                f"chunk no. {i} from the list of chunks"
             )
             continue
         doc.metadata["content_hash"] = content_hash
