@@ -36,7 +36,7 @@ Metadata:
 indexing_agent = get_indexing_service_manual()
 for idy, url in enumerate(urls, start=0):
     print("Starting ingestion of website")
-    res_state = indexing_agent.ingest_document(
+    res_state = indexing_agent.ingest_website(
         website_url=url, request_id=str(uuid.uuid4())
     )
     file_path = "app/data/reports/ingestion_pipeline_report.md"

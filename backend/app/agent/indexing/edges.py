@@ -6,6 +6,14 @@ from .models import ProgressStatusEnum
 from .state import AgentState
 
 
+def is_file(
+    state: AgentState,
+) -> Literal["pdf_scrapper_node", "web_scrapper"]:
+    if state.file_key:
+        return "pdf_scrapper_node"
+    return "web_scrapper"
+
+
 def is_chunked_docs_empty(
     state: AgentState,
 ) -> Command[Literal["doc_builder_node", "__end__"]]:

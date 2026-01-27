@@ -10,12 +10,14 @@ from app.rag.db import VectorClient
 from app.rag.embeddings import EmbeddingService
 from app.routes.dependencies.chunker import get_chunker
 from app.routes.dependencies.embedding import get_embedding
+from app.routes.dependencies.file_store import get_s3_service
 from app.routes.dependencies.indexing_agent import get_indexing_agent
 from app.routes.dependencies.llm import get_chat_model_service
 from app.routes.dependencies.retriever_agent import get_retriever_agent
 from app.routes.dependencies.settings import get_app_settings
 from app.routes.dependencies.tokenizer import get_tokenizer_service
 from app.routes.dependencies.vector_db import get_vector_client
+from app.services.file_store.db import S3Service
 from app.services.llm.factory import ChatModelService
 from app.services.llm.tokenizer import TokenizerService
 from app.services.rag import IndexingService, RetrievalService
@@ -48,6 +50,7 @@ def get_indexing_service(
     vector_db_service: Annotated[VectorClient, Depends(get_vector_client)],
     tokenizer_service: Annotated[TokenizerService, Depends(get_tokenizer_service)],
     indexing_agent: Annotated[CompiledStateGraph, Depends(get_indexing_agent)],
+    s3_service: Annotated[S3Service, Depends(get_s3_service)],
     settings: Annotated[Settings, Depends(get_app_settings)],
 ) -> IndexingService:
     return IndexingService(
@@ -56,8 +59,10 @@ def get_indexing_service(
         vector_db_service=vector_db_service,
         tokenizer_service=tokenizer_service,
         indexing_agent=indexing_agent,
+        s3_service=s3_service,
         settings=settings,
     )
+
 
 def get_indexing_service_manual() -> IndexingService:
     chunker_service = get_chunker()
@@ -66,11 +71,13 @@ def get_indexing_service_manual() -> IndexingService:
     tokenizer_service = get_tokenizer_service(settings)
     vector_db_service = get_vector_client(embedding_service, tokenizer_service)
     indexing_agent = get_indexing_agent()
+    s3_service = get_s3_service(settings)
     return IndexingService(
         chunker_service=chunker_service,
         embedding_service=embedding_service,
         vector_db_service=vector_db_service,
         tokenizer_service=tokenizer_service,
         indexing_agent=indexing_agent,
+        s3_service=s3_service,
         settings=settings,
     )

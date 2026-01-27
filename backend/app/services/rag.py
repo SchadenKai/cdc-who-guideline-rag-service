@@ -1,3 +1,6 @@
+import os
+import tempfile
+from pathlib import Path
 from tempfile import SpooledTemporaryFile
 from typing import cast
 
@@ -16,6 +19,7 @@ from app.rag.embeddings import EmbeddingService
 from app.services.file_store.db import S3Service
 from app.services.llm.factory import ChatModelService
 from app.services.llm.tokenizer import TokenizerService
+from app.services.scrapper import pdf_scrapper
 
 
 class IndexingService:
@@ -26,6 +30,7 @@ class IndexingService:
         vector_db_service: VectorClient,
         tokenizer_service: TokenizerService,
         indexing_agent: CompiledStateGraph,
+        s3_service: S3Service,
         settings: Settings,
     ):
         self.chunker_service: ChunkerService = chunker_service
@@ -33,12 +38,11 @@ class IndexingService:
         self.vector_db_service: VectorClient = vector_db_service
         self.tokenizer_service: TokenizerService = tokenizer_service
         self.indexing_agent: CompiledStateGraph = indexing_agent
+        self.s3_service: S3Service = s3_service
         self.settings: Settings = settings
 
-    def upload_file(
-        self, pdf_file: SpooledTemporaryFile, s3_service: S3Service, filename: str
-    ) -> None:
-        s3_client = s3_service.client
+    def upload_file(self, pdf_file: SpooledTemporaryFile, filename: str) -> None:
+        s3_client = self.s3_service.client
         try:
             s3_client.upload_fileobj(
                 pdf_file, self.settings.minio_bucket_name, filename
@@ -50,16 +54,41 @@ class IndexingService:
             )
             return None
 
-    def ingest_document(
-        self,
-        website_url: str,
-        request_id: str,
-        pdf_file: SpooledTemporaryFile | None = None,
-    ) -> IndexingAgentState:
+    def get_object_list(self, file_name: str) -> list[str]:
+        s3_client = self.s3_service.client
+        if file_name:
+            objects = s3_client.list_objects(
+                Bucket=self.settings.minio_bucket_name, Prefix=file_name
+            )
+        else:
+            objects = s3_client.list_objects(Bucket=self.settings.minio_bucket_name)
+        return (
+            [obj["Key"] for obj in objects["Contents"]]
+            if objects.get("Contents")
+            else []
+        )
+
+    def extract_md_content(self, file_key: str) -> str:
+        s3_client = self.s3_service.client
+        temp_file = tempfile.NamedTemporaryFile(
+            delete=False, suffix=Path(file_key).suffix
+        )
+        temp_file_path = Path(temp_file.name)
+        with temp_file as file:
+            s3_client.download_fileobj(self.settings.minio_bucket_name, file_key, file)
+
+        content = pdf_scrapper(temp_file_path)
+
+        if temp_file_path.exists():
+            os.remove(temp_file_path)
+
+        return content
+
+    def ingest_document(self, file_key: str, request_id: str) -> IndexingAgentState:
         collection_name = self.settings.milvus_collection_name
         db_client = self.vector_db_service.client
 
-        init_state = IndexingAgentState(website_url=website_url, pdf_file=pdf_file)
+        init_state = IndexingAgentState(file_key=file_key)
         context = IndexingAgentContext(
             chunker=self.chunker_service.get(
                 chunker_name="recursive", chunk_size=1021, chunk_overlap=10
@@ -69,6 +98,42 @@ class IndexingService:
             db_client=db_client,
             collection_name=collection_name,
             settings=self.settings,
+            s3_service=self.s3_service,
+        )
+        config: RunnableConfig = {"configurable": {"thread_id": request_id}}
+        final_response = {}
+        for res in self.indexing_agent.stream(
+            input=init_state, context=context, config=config
+        ):
+            for node_name, state in res.items():
+                # consideration for early outs
+                if "is_chunked_docs_empty" in node_name:
+                    final_response = state
+                if "indexing_node" in node_name:
+                    state = cast(dict, state)
+                    state.pop("final_documents")
+                    final_response = state
+        return final_response
+
+    def ingest_website(
+        self,
+        website_url: str,
+        request_id: str,
+    ) -> IndexingAgentState:
+        collection_name = self.settings.milvus_collection_name
+        db_client = self.vector_db_service.client
+
+        init_state = IndexingAgentState(website_url=website_url)
+        context = IndexingAgentContext(
+            chunker=self.chunker_service.get(
+                chunker_name="recursive", chunk_size=1021, chunk_overlap=10
+            ),
+            embedding=self.embedding_service,
+            tokenizer=self.tokenizer_service,
+            db_client=db_client,
+            collection_name=collection_name,
+            settings=self.settings,
+            s3_service=self.s3_service,
         )
         config: RunnableConfig = {"configurable": {"thread_id": request_id}}
         final_response = {}

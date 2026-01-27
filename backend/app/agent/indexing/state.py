@@ -7,7 +7,8 @@ from app.agent.indexing.models import ProgressStatusEnum, RelevantDocs
 
 
 class AgentState(BaseModel):
-    website_url: str
+    website_url: Optional[str] = None
+    file_key: Optional[str] = None
     raw_document: Optional[list[Document]] = None
     chunked_documents: Optional[list[Document]] = None
     final_documents: Optional[list[RelevantDocs]] = None

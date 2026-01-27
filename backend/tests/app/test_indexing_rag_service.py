@@ -93,7 +93,7 @@ class TestIndexingRAGService:
     def test_ingestion_return_run_metadata_only(
         self, indexing_service: IndexingService
     ):
-        result = indexing_service.ingest_document(
+        result = indexing_service.ingest_website(
             website_url="https://google.com", request_id="12315aianodwdian"
         )
         assert isinstance(result, dict)
@@ -106,7 +106,7 @@ class TestIndexingRAGService:
         } == set(result.keys())
 
     def test_get_chunking_called(self, indexing_service: IndexingService):
-        _ = indexing_service.ingest_document(
+        _ = indexing_service.ingest_website(
             website_url="https://google.com", request_id="12315aianodwdian"
         )
         indexing_service.chunker_service.get.assert_called_once_with(

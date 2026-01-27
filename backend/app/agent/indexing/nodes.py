@@ -1,13 +1,16 @@
 import asyncio
 import datetime
 import json
+import os
+import tempfile
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from crawl4ai import CrawlResult
 from langchain_core.documents import Document
 from langgraph.runtime import Runtime
 
-from app.services.scrapper import structured_output_scrapper
+from app.services.scrapper import pdf_scrapper, structured_output_scrapper
 
 from .context import AgentContext
 from .models import ProgressStatusEnum, SourceClass
@@ -26,10 +29,42 @@ def web_scrapper(state: AgentState) -> AgentState:
             "source": state.website_url,
             "page_title": results["title"],
             "published_date": results["date"],
+            "source_type": "web",
         },
     )
     if results.get("tags"):
         doc.metadata["tags"] = [tag["name"] for tag in results["tags"]]
+
+    return {
+        "raw_document": [doc],
+        "progress_status": ProgressStatusEnum.LOADING_FILE,
+    }
+
+
+def pdf_scrapper_node(state: AgentState, runtime: Runtime[AgentContext]) -> AgentState:
+    s3_client = runtime.context.s3_service.client
+    temp_file = tempfile.NamedTemporaryFile(
+        delete=False, suffix=Path(state.file_key).suffix
+    )
+    temp_file_path = Path(temp_file.name)
+    with temp_file as file:
+        s3_client.download_fileobj(
+            runtime.context.settings.minio_bucket_name, state.file_key, file
+        )
+
+    content = pdf_scrapper(temp_file_path)
+
+    if temp_file_path.exists():
+        os.remove(temp_file_path)
+
+    doc = Document(
+        page_content=content.export_to_markdown(),
+        metadata={
+            "source": state.file_key,
+            "page_title": content.name,
+            "source_type": "file",
+        },
+    )
 
     return {
         "raw_document": [doc],
@@ -95,10 +130,13 @@ def metadata_builder_node(
         doc.metadata["last_updated"] = datetime.datetime.now(tz=timezone)
 
         # category metadata
-        if SourceClass.WHO.value.lower() in state.website_url:
-            source_class = SourceClass.WHO
-        elif SourceClass.CDC.value.lower() in state.website_url:
-            source_class = SourceClass.CDC
+        if state.website_url:
+            if SourceClass.WHO.value.lower() in state.website_url:
+                source_class = SourceClass.WHO
+            elif SourceClass.CDC.value.lower() in state.website_url:
+                source_class = SourceClass.CDC
+            else:
+                source_class = SourceClass.OTHERS
         else:
             source_class = SourceClass.OTHERS
         doc.metadata["source_class"] = source_class
