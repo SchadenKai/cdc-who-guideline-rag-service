@@ -51,6 +51,7 @@ class Settings(BaseSettings):
     )
     minio_username: str = os.environ.get("MINIO_USERNAME", "abcd")
     minio_password: str = os.environ.get("MINIO_PASSWORD", "abcd2345")
+    minio_bucket_name: str = os.environ.get("MINO_BUCKET_NAME", "default")
 
 
 settings = Settings()

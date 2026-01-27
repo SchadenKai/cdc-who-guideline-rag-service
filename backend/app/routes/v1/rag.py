@@ -17,7 +17,18 @@ def ingest_document(
     request_id: Annotated[str, Depends(get_request_id)],
 ):
     return indexing_service.ingest_document(
-        website_url=website_url, request_id=request_id
+        website_url=website_url, pdf_file=pdf_file, request_id=request_id
+    )
+
+
+@rag_router.post("/upload")
+def upload_file_route(
+    file: Optional[UploadFile],
+    indexing_service: Annotated[IndexingService, Depends(get_indexing_service)],
+    s3_service: Annotated[S3Service, Depends(get_s3_service)],
+):
+    return indexing_service.upload_file(
+        pdf_file=file.file, s3_service=s3_service, filename=file.filename
     )
 
 

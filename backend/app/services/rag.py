@@ -1,3 +1,4 @@
+from tempfile import SpooledTemporaryFile
 from typing import cast
 
 from langchain_core.runnables import RunnableConfig
@@ -8,9 +9,11 @@ from app.agent.indexing.state import AgentState as IndexingAgentState
 from app.agent.retriever.context import AgentContext as InferenceAgentContext
 from app.agent.retriever.state import AgentState as InferenceAgentState
 from app.core.config import Settings
+from app.logger import app_logger
 from app.rag.chunker import ChunkerService
 from app.rag.db import VectorClient
 from app.rag.embeddings import EmbeddingService
+from app.services.file_store.db import S3Service
 from app.services.llm.factory import ChatModelService
 from app.services.llm.tokenizer import TokenizerService
 
@@ -32,11 +35,31 @@ class IndexingService:
         self.indexing_agent: CompiledStateGraph = indexing_agent
         self.settings: Settings = settings
 
-    def ingest_document(self, website_url: str, request_id: str) -> IndexingAgentState:
+    def upload_file(
+        self, pdf_file: SpooledTemporaryFile, s3_service: S3Service, filename: str
+    ) -> None:
+        s3_client = s3_service.client
+        try:
+            s3_client.upload_fileobj(
+                pdf_file, self.settings.minio_bucket_name, filename
+            )
+            return None
+        except Exception as e:
+            app_logger.error(
+                f"Something went wrong during uploading of file to file store: {e}"
+            )
+            return None
+
+    def ingest_document(
+        self,
+        website_url: str,
+        request_id: str,
+        pdf_file: SpooledTemporaryFile | None = None,
+    ) -> IndexingAgentState:
         collection_name = self.settings.milvus_collection_name
         db_client = self.vector_db_service.client
 
-        init_state = IndexingAgentState(website_url=website_url)
+        init_state = IndexingAgentState(website_url=website_url, pdf_file=pdf_file)
         context = IndexingAgentContext(
             chunker=self.chunker_service.get(
                 chunker_name="recursive", chunk_size=1021, chunk_overlap=10
