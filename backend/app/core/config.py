@@ -45,5 +45,12 @@ class Settings(BaseSettings):
 
     hf_api_key: str = os.environ.get("HUGGING_FACE_API_KEY", "")
 
+    # object store
+    minio_endpoint_url: str = os.environ.get(
+        "MINIO_ENDPOINT_URL", "http://localhost:9000"
+    )
+    minio_username: str = os.environ.get("MINIO_USERNAME", "abcd")
+    minio_password: str = os.environ.get("MINIO_PASSWORD", "abcd2345")
+
 
 settings = Settings()
