@@ -1,15 +1,16 @@
 import boto3
+from types_boto3_s3 import S3Client
 
 from app.core.config import Settings
 
 
 class S3Service:
     def __init__(self, settings: Settings):
-        self._s3_client: any | None = None
+        self._s3_client: S3Client | None = None
         self.settings: Settings = settings
 
     @property
-    def client(self):
+    def client(self) -> S3Client:
         if self._s3_client:
             return self._s3_client
         s3_client = boto3.client(

@@ -9,5 +9,7 @@ from app.services.file_store.db import S3Service
 
 
 @lru_cache
-def get_s3_service(settings: Annotated[Settings, Depends(get_app_settings)]):
+def get_s3_service(
+    settings: Annotated[Settings, Depends(get_app_settings)],
+) -> S3Service:
     return S3Service(settings=settings)
