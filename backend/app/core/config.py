@@ -7,7 +7,7 @@ load_dotenv()
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", frozen=True)
+    model_config = SettingsConfigDict(env_file=".env", frozen=True, extra="ignore")
 
     dev_mode: bool = (
         True if str(os.environ.get("DEV_MODE")).lower() == "true" else False
