@@ -26,9 +26,8 @@ class FileProcessor:
         self.file_key: str = file_key
         self.temp_file = None
         self.temp_file_path: Path | None = None
-        pass
 
-    def __enter__(self) -> Path:
+    def __enter__(self)  -> Path:
         s3_client: S3Client = self.s3_service.client
         self.temp_file = NamedTemporaryFile(
             delete=False, suffix=Path(self.file_key).suffix
@@ -43,7 +42,7 @@ class FileProcessor:
 
         return self.temp_file_path
 
-    def __exit__(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self._cleanup()
 
     def _cleanup(self):
