@@ -1,6 +1,6 @@
 import uuid
 
-from app.data.test_web_sources import urls
+from app.data.web_sources import urls
 from app.routes.dependencies.rag import get_indexing_service_manual
 
 md_report_template = """
