@@ -8,6 +8,7 @@ dependencies = [
     "ag-ui-protocol>=0.1.10",
     "boto3>=1.42.35",
     "crawl4ai[pdf]>=0.8.0",
+    "deepeval>=3.8.1",
     "docling>=2.70.0",
     "fastapi[standard]>=0.128.0",
     "langchain>=1.2.4",
