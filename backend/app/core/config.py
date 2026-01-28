@@ -38,6 +38,8 @@ class Settings(BaseSettings):
     lowest_score_threshold: float = 0.6
     highest_score_threshold: float = 1.0
 
+    rag_metrics_threshold: float = 0.7
+
     # model config
     embedding_provider: str = os.environ.get("EMBEDDING_PROVIDER", "openai")
     embedding_api_key: str = os.environ.get("EMBEDDING_API_KEY", "")
