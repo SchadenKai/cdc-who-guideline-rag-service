@@ -10,6 +10,7 @@ from app.core.config import Settings
 from app.rag.chunker import ChunkerService
 from app.rag.db import VectorClient
 from app.rag.embeddings import EmbeddingService
+from app.services.file_store.db import S3Service
 from app.services.llm.tokenizer import TokenizerService
 from app.services.rag import IndexingService
 
@@ -28,6 +29,8 @@ class TestIndexingRAGService:
         mk_vector_db_service.client = fake_vector_client
 
         mk_tokenizer_service: MockType = mocker.Mock(spec=TokenizerService)
+
+        mk_s3_service: MockType = mocker.Mock(spec=S3Service)
 
         mk_indexing_agent: MockType = mocker.Mock(spec=CompiledStateGraph)
         mk_indexing_agent.stream.return_value = [
@@ -87,7 +90,15 @@ class TestIndexingRAGService:
             indexing_agent=mk_indexing_agent,
             tokenizer_service=mk_tokenizer_service,
             vector_db_service=mk_vector_db_service,
+            s3_service=mk_s3_service,
             settings=mk_settings,
+        )
+
+    def test_upload_file(self, indexing_service: IndexingService):
+        s3_client = indexing_service.s3_service.client
+        s3_client.upload_fileobj("test", "test", "test")
+        s3_client.upload_fileobj.assert_called_once_with(
+            "test", "test", "test"
         )
 
     def test_ingestion_return_run_metadata_only(
