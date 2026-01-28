@@ -5,9 +5,9 @@ from .edges import is_chunked_docs_empty, is_file
 from .nodes import (
     chunker_node,
     doc_builder_node,
+    file_ingestion_node,
     indexing_node,
     metadata_builder_node,
-    file_ingestion_node,
     web_scrapper,
 )
 from .state import AgentState

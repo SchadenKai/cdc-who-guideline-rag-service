@@ -10,6 +10,7 @@ from crawl4ai import CrawlResult
 from langchain_core.documents import Document
 from langgraph.runtime import Runtime
 
+from app.services.file_store.context_manager import FileProcessor
 from app.services.scrapper import pdf_scrapper, structured_output_scrapper
 
 from .context import AgentContext
@@ -41,21 +42,13 @@ def web_scrapper(state: AgentState) -> AgentState:
     }
 
 
-def file_ingestion_node(state: AgentState, runtime: Runtime[AgentContext]) -> AgentState:
-    s3_client = runtime.context.s3_service.client
-    temp_file = tempfile.NamedTemporaryFile(
-        delete=False, suffix=Path(state.file_key).suffix
-    )
-    temp_file_path = Path(temp_file.name)
-    with temp_file as file:
-        s3_client.download_fileobj(
-            runtime.context.settings.minio_bucket_name, state.file_key, file
-        )
-
-    content = pdf_scrapper(temp_file_path)
-
-    if temp_file_path.exists():
-        os.remove(temp_file_path)
+def file_ingestion_node(
+    state: AgentState, runtime: Runtime[AgentContext]
+) -> AgentState:
+    with FileProcessor(
+        runtime.context.s3_service, state.file_key, runtime.context.settings
+    ) as file_path:
+        content = pdf_scrapper(file_path)
 
     doc = Document(
         page_content=content.export_to_markdown(),
